@@ -10,6 +10,10 @@ import json
 arg_length = len(sys.argv)
 ApiClient = UcloudApiClient(base_url, public_key, private_key)
 region = 'cn-south-02'
+highBandwidth = 5  #扩容到的最大带宽
+lowBandwidth = 1   #缩容到的最小带宽
+eipIdArray = [] #所有EIPID的存储数组，不需要填写，自动提取
+noAjustEip = ['eip-ci34br','eip-e3vzeb'] #手动填写，不参与调整的EIPid，比如这次不参与调整有2个IP
 
 
 #定义修改带宽的类，并定义一些列的方法。
@@ -62,12 +66,28 @@ class modifyBandwidth(object):
 		response = ApiClient.get("/", Parameters)
 		print response
 
+def getEIPId(): #获取EIP所有信息
+		Parameters = {
+			"Action":"DescribeEIP",
+			"Region":region
+		}
+		response = ApiClient.get("/", Parameters)
+		
+		return response
 
-if __name__=='__main__':
+def listEIP(): #从所有信息里提取EIPid，并存入数组eipIdArray里。
+	eipInfor = getEIPId()
+	number =  eipInfor['TotalCount']
+	
+	for i in range(number):
+		eipIdArray.append(eipInfor['EIPSet'][i]['EIPId'])
+	return eipIdArray
+
+
+
+def adjustBandwidth(eipid): #调整带宽主逻辑
 	#参数
-	targetEip = 'eip-e3vzeb'
-	highBandwidth = 5
-	lowBandwidth = 1
+	targetEip = eipid
 	
 	AutoEIP = modifyBandwidth(targetEip,highBandwidth,lowBandwidth)  #类封装给AutoEIP，并传入参数。
 	utilization = AutoEIP.getBandwidth() #带宽使用率，通过类的方法
@@ -86,4 +106,13 @@ if __name__=='__main__':
 			print "This the max bandwidth or the min bandwidth ,please ajust"	
 	except Exception,e:
 		print Exception,":",e
-		
+
+def main():
+	eipIdList = listEIP()
+	ajustEip = list(set(eipIdList).difference(set(noAjustEip)))  #剔除不参与的EIP。
+	for i in ajustEip:
+		adjustBandwidth(i)
+
+
+if __name__=='__main__':
+	main()
