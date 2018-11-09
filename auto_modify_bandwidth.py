@@ -83,11 +83,11 @@ def adjustBandwidth(eipid): #调整带宽主逻辑
 	print "This EIP %s utilization is %f,and the bandwidth is %dM" % (eipid,utilization,curBandwidth)
 
 	try:
-		#当带宽利用率超过70%，并且当前带宽还未到目标带宽，则直接增加到目标带宽。
+		#当带宽利用率超过70%，并且当前带宽还未到最高限制带宽，每次增加设置的步长带宽。
 		if utilization >= 0.7 and curBandwidth <= maxBandwidth:
 			newBandwidth = curBandwidth + stepBandwidth
 			AutoEIP.addBandwidth(newBandwidth)
-		#当前带宽利用率低于10%，并且当前带宽还未到目的地位带宽，则直接减少到目标低位带宽。
+		#当前带宽利用率低于10%，并且当前带宽还未到最低地位带宽，每次减少设置的步长带宽。
 		elif utilization <= 0.1 and curBandwidth > minBandwidth:
 			newBandwidth = curBandwidth - stepBandwidth
 			AutoEIP.reduceBandwidth(newBandwidth)
