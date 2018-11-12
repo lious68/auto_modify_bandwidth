@@ -1,7 +1,7 @@
 # auto_modify_bandwidth
 ajust bandwidth
 
-打开config.py文件，配置必要的参数。
+一、打开config.py文件，配置必要的参数。
 
 #配置公私钥"""
 public_key  = ""
