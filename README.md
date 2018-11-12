@@ -1,6 +1,6 @@
-# auto_modify_bandwidth
-ajust bandwidth
-
+用途：自动伸缩EIP带宽  
+  
+使用方法：  
 一、打开config.py文件，配置必要的参数。  
   
 #配置公私钥"""  
