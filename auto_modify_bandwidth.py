@@ -78,16 +78,29 @@ def adjustBandwidth(eipid): #调整带宽主逻辑
 	logger.info("This EIP %s utilization is %f,and the bandwidth is %dM" % (eipid,utilization,curBandwidth))
 
 	try:
-		#当带宽利用率超过70%，并且当前带宽还未到最高限制带宽，每次增加设置的步长带宽。
-		if utilization >= 0.7 and curBandwidth <= maxBandwidth:
-			newBandwidth = curBandwidth + stepBandwidth
-			AutoEIP.addBandwidth(newBandwidth)
-		#当前带宽利用率低于10%，并且当前带宽还未到最低地位带宽，每次减少设置的步长带宽。
-		elif utilization <= 0.1 and curBandwidth > minBandwidth:
-			newBandwidth = curBandwidth - stepBandwidth
-			AutoEIP.reduceBandwidth(newBandwidth)
+		if dynamic == 'OFF':
+			#当带宽利用率超过70%，并且当前带宽还未到最高限制带宽，每次增加设置的步长带宽。
+			if utilization >= 0.7 and curBandwidth <= maxBandwidth:
+				newBandwidth = curBandwidth + stepBandwidth
+				AutoEIP.addBandwidth(newBandwidth)
+			#当前带宽利用率低于10%，并且当前带宽还未到最低地位带宽，每次减少设置的步长带宽。
+			elif utilization <= 0.1 and curBandwidth > minBandwidth:
+				newBandwidth = curBandwidth - stepBandwidth
+				AutoEIP.reduceBandwidth(newBandwidth)
+			else:
+				logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
+		elif dynamic == 'ON':
+			if utilization >= 0.7 and curBandwidth <= maxBandwidth:
+				newBandwidth = curBandwidth + curBandwidth/2
+				AutoEIP.addBandwidth(newBandwidth)
+			#当前带宽利用率低于10%，并且当前带宽还未到最低地位带宽，每次减少设置的步长带宽。
+			elif utilization <= 0.1 and curBandwidth > minBandwidth:
+				newBandwidth = curBandwidth - curBandwidth/2
+				AutoEIP.reduceBandwidth(newBandwidth)
+			else:
+				logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
 		else:
-			logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
+			print "please choice dynamic mode"
 	except Exception,e:
 		print Exception,":",e
 
@@ -112,10 +125,9 @@ def main():
 		elif mode == 'auto':
 			eipIdList = listEIP() #获取所有EIPID
 		elif mode == 'alarm':
-			alarmMode()
-			eipIdList = alarmArray
+			eipIdList = alarmMode() #获取告警的EIPID
 		else:
-			print 'You have choice one mode'
+			print 'You should choice one mode'
 		ajustEip = list(set(eipIdList).difference(set(noAjustEip)))  #剔除不参与的EIP。
 		for i in ajustEip:
 			adjustBandwidth(i)
