@@ -71,6 +71,20 @@ def listEIP(): #从所有信息里提取EIPid，并存入数组eipIdArray里。
 		eipIdArray.append(eipInfor['EIPSet'][i]['EIPId'])
 	return eipIdArray
 
+def alarmEips():
+	#startTime = int(time.time())
+	Parameters = {
+		"Action": "GetAlarmRecordList",
+		"Region": region,
+		#'BeginTime': startTime
+	}
+	response = ApiClient.get("/", Parameters)
+	content = response['DataSet']
+	for i in xrange(len(content)):
+		if content[i]['ResourceType'] == 'eip':
+			alarmArray.append(content[i]['ResourceId'])
+	return alarmArray
+
 def adjustBandwidth(eipid): #调整带宽主逻辑
 	AutoEIP = ModifyBandwidth(eipid)  #类封装给AutoEIP，并传入参数。
 	utilization = AutoEIP.getBandwidth() #带宽使用率，通过类的方法
@@ -107,20 +121,6 @@ def adjustBandwidth(eipid): #调整带宽主逻辑
 	except Exception,e:
 		print Exception,":",e
 
-def alarmMode():
-	#startTime = int(time.time())
-	Parameters = {
-		"Action": "GetAlarmRecordList",
-		"Region": region,
-		#'BeginTime': startTime
-	}
-	response = ApiClient.get("/", Parameters)
-	content = response['DataSet']
-	for i in xrange(len(content)):
-		if content[i]['ResourceType'] == 'eip':
-			alarmArray.append(content[i]['ResourceId'])
-	return alarmArray
-
 def main():
 	while True:
 		if mode == 'manual':
@@ -128,7 +128,7 @@ def main():
 		elif mode == 'auto':
 			eipIdList = listEIP() #获取所有EIPID
 		elif mode == 'alarm':
-			eipIdList = alarmMode() #获取告警的EIPID
+			eipIdList = alarmEips() #获取告警的EIPID
 		else:
 			print 'You should choice one mode'
 		ajustEip = list(set(eipIdList).difference(set(noAjustEip)))  #剔除不参与的EIP。
