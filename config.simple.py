@@ -11,7 +11,7 @@ mode = 'alarm' #(auto|manual|alarm)
 #alarm 通过告警出来的EIP。
 
 dynamic = 'ON' #(ON|OFF) #动态调整带宽开关，如果ON，则下面的EIP配置带宽stepBandwidth参数无效。
-percent = 1.5 #自动调整带宽的步长，百分比。
+percent = 0.5 #自动调整带宽的步长，百分比。
 #配置EIP带宽相关参数
 maxBandwidth = 10  #扩容到的最大带宽
 minBandwidth = 1   #缩容到的最小带宽
