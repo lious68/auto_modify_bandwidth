@@ -24,6 +24,6 @@ stepBandwidth = 1 #每次扩容/缩容的带宽大小，单位M
   
 #全局通用参数  
 eipIdArray = [] #只有在manual模式下有效。  
-noAjustEip = ['eip1'] #三种模式下都有效。手动填写，不参与调整的EIPid，比如这次不参与调整有2个IP  
+noAjustEip = ['eip1'] #三种模式下都有效。手动填写，不参与调整的EIPid，
 durtime = 50 #下次调整带宽时间间隔，单位秒  
 region = 'cn-south-02' #可用区，请参考region文件  
