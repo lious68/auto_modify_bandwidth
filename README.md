@@ -14,7 +14,7 @@ mode = 'alarm' #(auto|manual|alarm)
 #manual 指定EIP方式，指定EIP，放到eipIdArray[]里。  
 #alarm 通过告警出来的EIP。  
   
-dynamic = 'ON' #(ON|OFF) #动态调整带宽开关，如果ON，则下面的EIP配置带宽相关参数无效。  
+dynamic = 'ON' #(ON|OFF) #动态调整带宽开关，如果ON，在原基础每周期增加/减少50%带宽。并且下面的EIP配置带宽相关参数无效。  
  #配置EIP带宽相关参数  
 maxBandwidth = 5  #扩容到的最大带宽  
 minBandwidth = 1   #缩容到的最小带宽  
