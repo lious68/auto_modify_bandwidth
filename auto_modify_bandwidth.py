@@ -90,17 +90,20 @@ def adjustBandwidth(eipid): #调整带宽主逻辑
 			else:
 				logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
 		elif dynamic == 'ON':
-			if utilization >= 0.7 and curBandwidth <= maxBandwidth:
-				newBandwidth = curBandwidth + curBandwidth/2
-				AutoEIP.addBandwidth(newBandwidth)
-			#当前带宽利用率低于10%，并且当前带宽还未到最低地位带宽，每次减少设置的步长带宽。
-			elif utilization <= 0.1 and curBandwidth > minBandwidth:
-				newBandwidth = curBandwidth - curBandwidth/2
-				AutoEIP.reduceBandwidth(newBandwidth)
+			if percent >= 0.1 and percent <= 1:
+				if utilization >= 0.7 and curBandwidth <= maxBandwidth:
+					newBandwidth = int(curBandwidth + curBandwidth*percent)
+					AutoEIP.addBandwidth(newBandwidth)
+				#当前带宽利用率低于10%，并且当前带宽还未到最低地位带宽，每次减少设置的步长带宽。
+				elif utilization <= 0.1 and curBandwidth > minBandwidth:
+					newBandwidth = int(curBandwidth - curBandwidth*percent)
+					AutoEIP.reduceBandwidth(newBandwidth)
+				else:
+					logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
 			else:
-				logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
+				print "please input percent value between 0.1 and 1"
 		else:
-			print "please choice dynamic mode"
+			print "please choice dynamic ON/OFF"
 	except Exception,e:
 		print Exception,":",e
 
