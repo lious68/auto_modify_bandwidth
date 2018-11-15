@@ -9,10 +9,11 @@ from logger import logger,set_log_file
 
 arg_length = len(sys.argv)
 ApiClient = UcloudApiClient(base_url, public_key, private_key)
+alarmArray = []
 
 
 #定义修改带宽的类，并定义一些列的方法。
-class modifyBandwidth(object):
+class ModifyBandwidth(object):
 	def __init__(self,eipid):
 		self.eipid = eipid
 
@@ -42,7 +43,7 @@ class modifyBandwidth(object):
 			"Bandwidth":addTo
 		}
 		response = ApiClient.get("/", Parameters)
-		print response
+		logger.info(response)
 
 	def reduceBandwidth(self,reduceTo):  #定义减少带宽的方法
 		Parameters = {
@@ -52,7 +53,7 @@ class modifyBandwidth(object):
 			"Bandwidth":reduceTo
 		}
 		response = ApiClient.get("/", Parameters)
-		print response
+		logger.info(response)
 
 
 def getEIPId(): #获取EIP所有信息
@@ -71,7 +72,7 @@ def listEIP(): #从所有信息里提取EIPid，并存入数组eipIdArray里。
 	return eipIdArray
 
 def adjustBandwidth(eipid): #调整带宽主逻辑
-	AutoEIP = modifyBandwidth(eipid)  #类封装给AutoEIP，并传入参数。
+	AutoEIP = ModifyBandwidth(eipid)  #类封装给AutoEIP，并传入参数。
 	utilization = AutoEIP.getBandwidth() #带宽使用率，通过类的方法
 	curBandwidth = AutoEIP.getEip() #当前带宽，通过类的方法
 	logger.info("This EIP %s utilization is %f,and the bandwidth is %dM" % (eipid,utilization,curBandwidth))
@@ -90,18 +91,35 @@ def adjustBandwidth(eipid): #调整带宽主逻辑
 	except Exception,e:
 		print Exception,":",e
 
+def alarmMode():
+	#startTime = int(time.time())
+	Parameters = {
+		"Action": "GetAlarmRecordList",
+		"Region": region,
+		#'BeginTime': startTime
+	}
+	response = ApiClient.get("/", Parameters)
+	content = response['DataSet']
+	for i in xrange(len(content)):
+		if content[i]['ResourceType'] == 'eip':
+			alarmArray.append(content[i]['ResourceId'])
+	return alarmArray
+
 def main():
 	while True:
-		if eipIdArray:
+		if mode == 'manual':
 			eipIdList = eipIdArray
-		else:
+		elif mode == 'auto':
 			eipIdList = listEIP() #获取所有EIPID
-
+		elif mode == 'alarm':
+			alarmMode()
+			eipIdList = alarmArray
+		else:
+			print 'You have choice one mode'
 		ajustEip = list(set(eipIdList).difference(set(noAjustEip)))  #剔除不参与的EIP。
 		for i in ajustEip:
 			adjustBandwidth(i)
 		time.sleep(durtime)
-
 
 if __name__=='__main__':
 	main()
