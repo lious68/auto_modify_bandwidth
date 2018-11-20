@@ -6,10 +6,10 @@ from config import *
 import sys, time, json
 from logger import logger, set_log_file
 
+
 arg_length = len(sys.argv)
 ApiClient = UcloudApiClient(base_url, public_key, private_key)
 alarmArray = []
-
 
 # 定义修改带宽的类，并定义一些列的方法。
 class EipInterface(object):
@@ -74,7 +74,6 @@ def getEipBandwidthInfo():  # 获取EIP所有信息
     response = ApiClient.get("/", Parameters)
     return response
 
-
 def getAllEipId():  # 从所有信息里提取EIPid，并存入数组eipIdArray里。
     eipInfor = getEipBandwidthInfo()
     number = eipInfor['TotalCount']
@@ -82,13 +81,13 @@ def getAllEipId():  # 从所有信息里提取EIPid，并存入数组eipIdArray�
         eipIdArray.append(eipInfor['EIPSet'][i]['EIPId'])
     return eipIdArray
 
-
 def getAlarmEipId(): #获取告警信息，并提取EIP
     # startTime = int(time.time())
+    five_min_ago = int(time.time()) - 5 * 60
     Parameters = {
         "Action": "GetAlarmRecordList",
         "Region": region,
-        # 'BeginTime': startTime
+        "BeginTime": five_min_ago
     }
     response = ApiClient.get("/", Parameters)
     content = response['DataSet']
@@ -97,7 +96,6 @@ def getAlarmEipId(): #获取告警信息，并提取EIP
             alarmArray.append(content[i]['ResourceId'])
     return alarmArray
 
-
 def adjustBandwidth(eipid):  # 调整带宽主逻辑
     AutoEIP = EipInterface(eipid)  # 类封装给AutoEIP，并传入参数。
     utilization = AutoEIP.getBandwidthUsage()  # 带宽使用率，通过类的方法
@@ -105,7 +103,7 @@ def adjustBandwidth(eipid):  # 调整带宽主逻辑
     logger.info("This EIP %s utilization is %f,and the bandwidth is %dM" % (eipid, utilization, curBandwidth))
 
     try:
-        if method == 'static':
+        if adjust_method == 'static':
             # 当带宽利用率超过70%，并且当前带宽还未到最高限制带宽，每次增加设置的步长带宽。
             if utilization >= 0.7 and curBandwidth <= maxBandwidth:
                 newBandwidth = curBandwidth + stepBandwidth
@@ -115,8 +113,8 @@ def adjustBandwidth(eipid):  # 调整带宽主逻辑
                 newBandwidth = curBandwidth - stepBandwidth
                 AutoEIP.reduceBandwidth(newBandwidth)
             else:
-                logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
-        elif method == 'dynamic':
+                logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please adjust")
+        elif adjust_method == 'dynamic':
             if percent >= 0.1 and percent <= 1:
                 if utilization >= 0.7 and curBandwidth <= maxBandwidth:
                     newBandwidth = int(curBandwidth + curBandwidth * percent)
@@ -126,21 +124,20 @@ def adjustBandwidth(eipid):  # 调整带宽主逻辑
                     newBandwidth = int(curBandwidth - curBandwidth * percent)
                     AutoEIP.reduceBandwidth(newBandwidth)
                 else:
-                    logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please ajust")
+                    logger.info("Do nothing,This the max bandwidth or the min bandwidth ,please adjust")
             else:
                 print "please input percent value between 0.1 and 1"
-        elif method == 'package':
+        elif adjust_method == 'package':
             if utilization >= 0.7 and curBandwidth <= maxBandwidth:
                 AutoEIP.createBandwidthPackage()
                 logger.info("has createBandwidthPackage")
             else:
                 logger.info("Do nothing")
         else:
-            print "please choice method"
+            print "please choice adjust_method"
     except Exception, e:
         print
         Exception, ":", e
-
 
 def main():
     while True:
@@ -153,10 +150,9 @@ def main():
         elif run_mode == 'alarm':
             eipIdList = getAlarmEipId()  # 获取告警的EIPID
         else:
-            print
-            'You should choice one run_mode'
-        ajustEip = list(set(eipIdList).difference(set(noAjustEip)))  # 剔除不参与的EIP。
-        for i in ajustEip:
+            print 'You should choice one run_mode'
+        adjustEip = list(set(eipIdList).difference(set(noAdjustEip)))  # 剔除不参与的EIP。
+        for i in adjustEip:
             adjustBandwidth(i)
         time.sleep(durtime)
 
