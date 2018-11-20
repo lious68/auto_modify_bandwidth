@@ -25,5 +25,5 @@ stepBandwidth = 1 #每次扩容/缩容的带宽大小，单位M
 maxBandwidth = 10  #EIP的最大带宽
 minBandwidth = 1   #EIP的最小带宽
 noAjustEip = ['eip1'] #三种模式下都有效。手动填写，不参与调整的EIPid
-durtime = 10 #下次调整带宽时间间隔，单位秒
+durtime = 310 #下次调整带宽时间间隔，单位秒
 region = 'cn-south-02' #可用区，请参考region文件
